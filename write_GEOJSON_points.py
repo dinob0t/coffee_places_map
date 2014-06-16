@@ -60,16 +60,20 @@ with open('data.csv', 'rb') as csvfile:
 				cur_score = ast.literal_eval(row_line[0])/5.0
 				lon_step = LON_DEG_P_M*(((cur_score**3)*50+1)*1)
 				lat_step = LAT_DEG_P_M*(((cur_score**3)*50+1)*1)
-				my_poly = geojson.Polygon([[(cur_lon - lon_step, cur_lat + lat_step), (cur_lon + lon_step, cur_lat + lat_step), (cur_lon + lon_step, cur_lat - lat_step), (cur_lon - lon_step, cur_lat - lat_step)]])
+				#my_poly = geojson.Polygon([[(cur_lon - lon_step, cur_lat + lat_step), (cur_lon + lon_step, cur_lat + lat_step), (cur_lon + lon_step, cur_lat - lat_step), (cur_lon - lon_step, cur_lat - lat_step)]])
+				my_point = geojson.Point((cur_lon, cur_lat))
 				prop_dict = {}
-				prop_dict['fill'] = "#FF0000"
-				prop_dict['stroke-width'] = "0"
-				prop_dict['fill-opacity'] = str((cur_score-0.2)**2 + 0.2)
+				prop_dict['marker'] = "circle"
+				if cur_score < 0.6:
+					prop_dict['marker-size'] = "small"
+				elif cur_score < 0.8:
+					prop_dict['marker-size'] = "medium"
+				else:
+					prop_dict['marker-size'] = "large"
+				prop_dict['marker-color'] = "#FF0000"
 				prop_dict['name'] = row_line[1]
-				prop_dict['rating'] = cur_score*5
-				print prop_dict['fill-opacity']
-				#prop_dict['fill-opacity'] = 0.5
-				my_feature = geojson.Feature(geometry=my_poly,properties = prop_dict)
+				prop_dict['rating'] = str(cur_score*5)
+				my_feature = geojson.Feature(geometry=my_point,properties = prop_dict)
 				my_feature_list.append(my_feature)
 			
 		count +=1
@@ -79,5 +83,5 @@ my_feature_coll = geojson.FeatureCollection(my_feature_list )
 
 dump = geojson.dumps(my_feature_coll, sort_keys=True)
 
-with open("test.json", "w") as outfile:
+with open("man_brook_coffee_points.json", "w") as outfile:
 	json.dump(my_feature_coll, outfile, indent=4)
